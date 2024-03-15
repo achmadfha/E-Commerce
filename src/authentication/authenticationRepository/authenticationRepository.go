@@ -4,6 +4,7 @@ import (
 	"E-Commerce/models/dto/authenticationDto"
 	"E-Commerce/src/authentication"
 	"database/sql"
+	"errors"
 )
 
 type authenticationRepository struct {
@@ -74,4 +75,29 @@ func (a authenticationRepository) CheckUsrNameExists(usrName string) (bool, erro
 	}
 
 	return exists, nil
+}
+
+func (a authenticationRepository) RetrieveUsers(usrEmail string) (usr authenticationDto.Register, err error) {
+	querty := `SELECT
+	  user_id,
+	  username,
+	  password,
+	  email,
+	  role,
+	  created_at,
+	  updated_at
+	FROM
+	  users WHERE email = $1`
+
+	var usrData authenticationDto.Register
+	row := a.db.QueryRow(querty, usrEmail)
+	err = row.Scan(&usrData.UsersID, &usrData.Username, &usrData.Password, &usrData.Email, &usrData.Role, &usrData.CreatedAt, &usrData.UpdatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return authenticationDto.Register{}, errors.New("01")
+		}
+		return authenticationDto.Register{}, err
+	}
+
+	return usrData, err
 }

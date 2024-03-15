@@ -13,7 +13,7 @@ type (
 		Email     string    `json:"email"`
 		Role      string    `json:"role"`
 		CreatedAt time.Time `json:"created_at"`
-		UpdatedAt time.Time `json:"updated_at,omitempty"`
+		UpdatedAt time.Time `json:"updated_at"`
 	}
 
 	RegistrationRequest struct {
@@ -27,5 +27,10 @@ type (
 		Username  string    `json:"username"`
 		Email     string    `json:"email"`
 		CreatedAt time.Time `json:"created_at"`
+	}
+
+	LoginRequest struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 )

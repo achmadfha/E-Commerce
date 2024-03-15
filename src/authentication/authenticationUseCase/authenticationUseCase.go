@@ -6,6 +6,7 @@ import (
 	"E-Commerce/pkg/utils"
 	"E-Commerce/src/authentication"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"time"
 )
@@ -69,4 +70,28 @@ func (a authenticationUC) RegisterUsers(req authenticationDto.RegistrationReques
 	}
 
 	return usrRes, nil
+}
+
+func (a authenticationUC) LoginUsers(req authenticationDto.LoginRequest) (token string, err error) {
+	usr, err := a.authenticationRepository.RetrieveUsers(req.Email)
+	if err != nil {
+		// 01 email not registered
+		if err.Error() == "01" {
+			return "", errors.New("01")
+		}
+		return "", err
+	}
+
+	if err := utils.VerifyPassword(usr.Password, req.Password); err != nil {
+		// 02 password didn't match
+		fmt.Println(err)
+		return "", errors.New("02")
+	}
+
+	token, err = utils.GenerateToken(usr.UsersID)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
