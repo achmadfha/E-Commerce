@@ -7,9 +7,11 @@ type AuthenticationRepository interface {
 	CheckEmailExists(usrEmail string) (bool, error)
 	CheckUsrNameExists(usrName string) (bool, error)
 	RetrieveUsers(usrEmail string) (usr authenticationDto.Register, err error)
+	UpdatePassword(password, email string) error
 }
 
 type AuthenticationUseCase interface {
 	RegisterUsers(req authenticationDto.RegistrationRequest) (authenticationDto.RegistrationResponse, error)
 	LoginUsers(req authenticationDto.LoginRequest) (token string, err error)
+	UpdatePassword(req authenticationDto.UpdatePassword) error
 }

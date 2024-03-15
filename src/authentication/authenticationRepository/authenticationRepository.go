@@ -101,3 +101,19 @@ func (a authenticationRepository) RetrieveUsers(usrEmail string) (usr authentica
 
 	return usrData, err
 }
+
+func (a authenticationRepository) UpdatePassword(password, email string) error {
+	query := `UPDATE
+	  users
+	SET
+	  PASSWORD = $1
+	WHERE
+	  email = $2`
+
+	_, err := a.db.Exec(query, password, email)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

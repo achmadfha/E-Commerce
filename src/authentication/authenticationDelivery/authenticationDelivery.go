@@ -22,6 +22,7 @@ func NewAuthenticationDelivery(v1Group *gin.RouterGroup, authenticationUC authen
 	{
 		authenticationGroup.POST("/register", handler.Register)
 		authenticationGroup.POST("/login", handler.Login)
+		authenticationGroup.PUT("/change-password", handler.UpdatePassword)
 	}
 }
 
@@ -58,13 +59,11 @@ func (auth authenticationDelivery) Login(ctx *gin.Context) {
 		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeAuth, constants.GeneralErrCode)
 		return
 	}
-
 	validationErr := validation.ValidateLogin(req)
 	if len(validationErr) > 0 {
 		json.NewResponseBadRequest(ctx, validationErr, constants.BadReqMsg, constants.ServiceCodeAuth, constants.GeneralErrCode)
 		return
 	}
-
 	token, err := auth.authenticationUC.LoginUsers(req)
 	if err != nil {
 		if err.Error() == "01" {
@@ -80,4 +79,31 @@ func (auth authenticationDelivery) Login(ctx *gin.Context) {
 	}
 	data := interface{}(map[string]string{"access_token": token})
 	json.NewResponseSuccess(ctx, data, nil, "login successfully.", constants.ServiceCodeAuth, constants.SuccessCode)
+}
+
+func (auth authenticationDelivery) UpdatePassword(ctx *gin.Context) {
+	var req authenticationDto.UpdatePassword
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeAuth, constants.GeneralErrCode)
+		return
+	}
+	validationErr := validation.ValidateUpdatePassword(req)
+	if len(validationErr) > 0 {
+		json.NewResponseBadRequest(ctx, validationErr, constants.BadReqMsg, constants.ServiceCodeAuth, constants.GeneralErrCode)
+		return
+	}
+	if err := auth.authenticationUC.UpdatePassword(req); err != nil {
+		if err.Error() == "01" {
+			json.NewResponseForbidden(ctx, "email doesn't exists on our records", constants.ServiceCodeAuth, constants.Forbidden)
+			return
+		}
+		if err.Error() == "02" {
+			json.NewResponseForbidden(ctx, "Unauthorized email and password didn't match", constants.ServiceCodeAuth, constants.Forbidden)
+			return
+		}
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeAuth, constants.GeneralErrCode)
+		return
+	}
+
+	json.NewResponseSuccess(ctx, nil, nil, "change password successfully.", constants.ServiceCodeAuth, constants.SuccessCode)
 }

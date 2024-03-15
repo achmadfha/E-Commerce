@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func GenerateToken(id uuid.UUID) (tokenString string, err error) {
+func GenerateToken(id uuid.UUID, role string) (tokenString string, err error) {
 	expired := os.Getenv("TOKEN_EXPIRED")
 	secret := os.Getenv("SECRET_TOKEN")
 	exp, err := strconv.Atoi(expired)
@@ -22,6 +22,7 @@ func GenerateToken(id uuid.UUID) (tokenString string, err error) {
 	claims := jwt.MapClaims{
 		"clientId": id,
 		"exp":      expiredTime.Unix(),
+		"role":     role,
 		"iat":      now.Unix(),
 	}
 

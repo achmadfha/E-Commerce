@@ -88,10 +88,39 @@ func (a authenticationUC) LoginUsers(req authenticationDto.LoginRequest) (token 
 		return "", errors.New("02")
 	}
 
-	token, err = utils.GenerateToken(usr.UsersID)
+	token, err = utils.GenerateToken(usr.UsersID, usr.Role)
 	if err != nil {
 		return "", err
 	}
 
 	return token, nil
+}
+
+func (a authenticationUC) UpdatePassword(req authenticationDto.UpdatePassword) error {
+	emailExists, err := a.authenticationRepository.CheckEmailExists(req.Email)
+	if err != nil {
+		return err
+	}
+	if !emailExists {
+		// email not registered
+		return errors.New("01")
+	}
+
+	usr, err := a.authenticationRepository.RetrieveUsers(req.Email)
+	if err != nil {
+		return err
+	}
+
+	if err := utils.VerifyPassword(usr.Password, req.OldPassword); err != nil {
+		// password didn't match
+		return errors.New("02")
+	}
+
+	hashedPassword, err := utils.HashPassword(req.NewPassword)
+
+	if err := a.authenticationRepository.UpdatePassword(hashedPassword, req.Email); err != nil {
+		return err
+	}
+
+	return nil
 }
