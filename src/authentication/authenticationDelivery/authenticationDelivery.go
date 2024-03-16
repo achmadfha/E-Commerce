@@ -4,6 +4,8 @@ import (
 	"E-Commerce/models/constants"
 	"E-Commerce/models/dto/authenticationDto"
 	"E-Commerce/models/dto/json"
+	"E-Commerce/pkg/middleware"
+	"E-Commerce/pkg/utils"
 	"E-Commerce/pkg/validation"
 	"E-Commerce/src/authentication"
 	"github.com/gin-gonic/gin"
@@ -23,6 +25,7 @@ func NewAuthenticationDelivery(v1Group *gin.RouterGroup, authenticationUC authen
 		authenticationGroup.POST("/register", handler.Register)
 		authenticationGroup.POST("/login", handler.Login)
 		authenticationGroup.PUT("/change-password", handler.UpdatePassword)
+		authenticationGroup.GET("/me", middleware.JWTAuth("admin", "users"), handler.RetrieveUsersByID)
 	}
 }
 
@@ -106,4 +109,31 @@ func (auth authenticationDelivery) UpdatePassword(ctx *gin.Context) {
 	}
 
 	json.NewResponseSuccess(ctx, nil, nil, "change password successfully.", constants.ServiceCodeAuth, constants.SuccessCode)
+}
+
+func (auth authenticationDelivery) RetrieveUsersByID(ctx *gin.Context) {
+	tokenString := utils.ExtractTokenFromHeader(ctx.Request)
+	claims, err := utils.ParseTokenAndExtractClaims(tokenString)
+	if err != nil {
+		json.NewResponseUnauthorized(ctx, "Unauthorized. [Invalid Token]", constants.ServiceCodeJWT, constants.Unauthorized)
+		return
+	}
+
+	clientID, ok := claims["clientId"].(string)
+	if !ok {
+		json.NewResponseUnauthorized(ctx, "Unauthorized. [Invalid Client ID]", constants.ServiceCodeJWT, constants.Unauthorized)
+		return
+	}
+
+	usr, err := auth.authenticationUC.RetrieveUsersByID(clientID)
+	if err != nil {
+		if err.Error() == "01" {
+			json.NewResponseForbidden(ctx, "email doesn't exists on our records", constants.ServiceCodeAuth, constants.Forbidden)
+			return
+		}
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeAuth, constants.GeneralErrCode)
+		return
+	}
+
+	json.NewResponseSuccess(ctx, usr, nil, "User retrieved successfully.", constants.ServiceCodeAuth, constants.SuccessCode)
 }

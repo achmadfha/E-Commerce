@@ -117,3 +117,25 @@ func (a authenticationRepository) UpdatePassword(password, email string) error {
 
 	return nil
 }
+
+func (a authenticationRepository) RetrieveUsersByID(id string) (usr authenticationDto.RegistrationResponse, err error) {
+	querty := `SELECT
+	  user_id,
+	  username,
+	  email,
+	  created_at
+	FROM
+	  users WHERE user_id = $1`
+
+	var usrData authenticationDto.RegistrationResponse
+	row := a.db.QueryRow(querty, id)
+	err = row.Scan(&usrData.UsersID, &usrData.Username, &usrData.Email, &usrData.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return authenticationDto.RegistrationResponse{}, errors.New("01")
+		}
+		return authenticationDto.RegistrationResponse{}, err
+	}
+
+	return usrData, err
+}

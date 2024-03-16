@@ -124,3 +124,15 @@ func (a authenticationUC) UpdatePassword(req authenticationDto.UpdatePassword) e
 
 	return nil
 }
+
+func (a authenticationUC) RetrieveUsersByID(id string) (authenticationDto.RegistrationResponse, error) {
+	data, err := a.authenticationRepository.RetrieveUsersByID(id)
+	if err != nil {
+		if err.Error() == "01" {
+			return authenticationDto.RegistrationResponse{}, errors.New("01")
+		}
+		return authenticationDto.RegistrationResponse{}, err
+	}
+
+	return data, nil
+}
