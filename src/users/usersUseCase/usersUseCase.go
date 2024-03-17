@@ -57,3 +57,22 @@ func (u userUC) RetrieveAllUsers(page, pageSize int) ([]usersDto.User, json.Pagi
 
 	return userData, pagination, nil
 }
+
+func (u userUC) RetrieveUsersByID(usrID string) (usersDto.UserResponse, error) {
+	profileExists, err := u.userRepository.CheckUserProfileExists(usrID)
+	if err != nil {
+		return usersDto.UserResponse{}, err
+	}
+
+	if !profileExists {
+		// profile doesn't exists
+		return usersDto.UserResponse{}, errors.New("01")
+	}
+
+	userData, err := u.userRepository.RetrieveUsersByID(usrID)
+	if err != nil {
+		return usersDto.UserResponse{}, err
+	}
+
+	return userData, nil
+}

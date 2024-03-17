@@ -22,6 +22,7 @@ func NewUserDelivery(v1Group *gin.RouterGroup, userUC users.UserUseCase) {
 	userGroup := v1Group.Group("/users")
 	{
 		userGroup.GET("", middleware.JWTAuth("admin"), handler.RetrieveAllUsers)
+		userGroup.GET("/:id", middleware.JWTAuth("admin", "users"), handler.RetrieveUsersByID)
 	}
 }
 
@@ -42,4 +43,22 @@ func (u userDelivery) RetrieveAllUsers(ctx *gin.Context) {
 	}
 
 	json.NewResponseSuccess(ctx, userData, pagination, "success retrieve all users", constants.ServiceCodeUsers, constants.SuccessCode)
+}
+
+func (u userDelivery) RetrieveUsersByID(ctx *gin.Context) {
+	usrID := ctx.Param("id")
+
+	userData, err := u.userUC.RetrieveUsersByID(usrID)
+	if err != nil {
+		if err.Error() == "01" {
+			errorMessage := fmt.Sprintf("users %s doesn't have profile, complete ur profile frist", usrID)
+			json.NewResponseForbidden(ctx, errorMessage, constants.ServiceCodeUsers, constants.Forbidden)
+			return
+		}
+
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeUsers, constants.GeneralErrCode)
+		return
+	}
+
+	json.NewResponseSuccess(ctx, userData, nil, "success retrieve users", constants.ServiceCodeUsers, constants.SuccessCode)
 }

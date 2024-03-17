@@ -65,3 +65,66 @@ func (u userRepository) CountAllUsers() (int, error) {
 	}
 	return count, nil
 }
+
+func (u userRepository) CheckUserProfileExists(usrID string) (bool, error) {
+	query := `SELECT
+	  EXISTS(
+		SELECT
+		  1
+		FROM
+		  user_profiles
+		WHERE
+		  user_id = $1
+	  )`
+
+	var exists bool
+	err := u.db.QueryRow(query, usrID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
+
+func (u userRepository) RetrieveUsersByID(usrID string) (usrData usersDto.UserResponse, err error) {
+	query := `SELECT
+	  u.user_id,
+	  u.username,
+	  u.email,
+	  u.created_at,
+	  u.updated_at,
+	  up.full_name,
+	  up.address,
+	  up.city,
+	  up.state,
+	  up.country,
+	  up.postal_code,
+	  up.phone
+	FROM
+	  users u
+	  JOIN user_profiles up ON u.user_id = up.user_id
+	WHERE
+	  u.user_id = $1`
+
+	row := u.db.QueryRow(query, usrID)
+	err = row.Scan(
+		&usrData.UserID,
+		&usrData.Username,
+		&usrData.Email,
+		&usrData.CreatedAt,
+		&usrData.UpdatedAt,
+		&usrData.UserProfile.FullName,
+		&usrData.UserProfile.Address,
+		&usrData.UserProfile.City,
+		&usrData.UserProfile.State,
+		&usrData.UserProfile.Country,
+		&usrData.UserProfile.PostalCode,
+		&usrData.UserProfile.Phone,
+	)
+
+	if err != nil {
+		return usrData, err
+	}
+
+	return usrData, nil
+}
