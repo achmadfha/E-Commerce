@@ -3,10 +3,12 @@ package usersDelivery
 import (
 	"E-Commerce/models/constants"
 	"E-Commerce/models/dto/json"
+	"E-Commerce/models/dto/usersDto"
 	"E-Commerce/pkg/middleware"
 	"E-Commerce/src/users"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"strconv"
 )
 
@@ -23,6 +25,7 @@ func NewUserDelivery(v1Group *gin.RouterGroup, userUC users.UserUseCase) {
 	{
 		userGroup.GET("", middleware.JWTAuth("admin"), handler.RetrieveAllUsers)
 		userGroup.GET("/:id", middleware.JWTAuth("admin", "users"), handler.RetrieveUsersByID)
+		userGroup.PUT("/:id", middleware.JWTAuth("admin", "users"), handler.UpdateProfiles)
 	}
 }
 
@@ -61,4 +64,39 @@ func (u userDelivery) RetrieveUsersByID(ctx *gin.Context) {
 	}
 
 	json.NewResponseSuccess(ctx, userData, nil, "success retrieve users", constants.ServiceCodeUsers, constants.SuccessCode)
+}
+
+func (u userDelivery) UpdateProfiles(ctx *gin.Context) {
+	var req usersDto.UserProfile
+	usrIDStr := ctx.Param("id")
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeUsers, constants.GeneralErrCode)
+		return
+	}
+
+	usrID, err := uuid.Parse(usrIDStr)
+	if err != nil {
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeUsers, constants.GeneralErrCode)
+		return
+	}
+
+	usrProfile := usersDto.UserUpdate{
+		UserID:     usrID,
+		FullName:   req.FullName,
+		Address:    req.Address,
+		City:       req.City,
+		State:      req.State,
+		Country:    req.Country,
+		PostalCode: req.PostalCode,
+		Phone:      req.Phone,
+	}
+
+	err = u.userUC.UpdateProfiles(usrProfile)
+	if err != nil {
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeUsers, constants.GeneralErrCode)
+		return
+	}
+
+	// todo return updated profile as response
 }

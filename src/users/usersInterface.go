@@ -10,9 +10,11 @@ type UserRepository interface {
 	CountAllUsers() (int, error)
 	CheckUserProfileExists(usrID string) (bool, error)
 	RetrieveUsersByID(usrID string) (usrData usersDto.UserResponse, err error)
+	UpdateProfiles(user usersDto.UserUpdate) error
 }
 
 type UserUseCase interface {
 	RetrieveAllUsers(page, pageSize int) ([]usersDto.User, json.Pagination, error)
 	RetrieveUsersByID(usrID string) (usersDto.UserResponse, error)
+	UpdateProfiles(req usersDto.UserUpdate) error
 }

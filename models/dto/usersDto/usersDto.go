@@ -34,4 +34,15 @@ type (
 		PostalCode string `json:"postal_code"`
 		Phone      string `json:"phone"`
 	}
+
+	UserUpdate struct {
+		UserID     uuid.UUID `json:"user_id"`
+		FullName   string    `json:"full_name"`
+		Address    string    `json:"address"`
+		City       string    `json:"city"`
+		State      string    `json:"state"`
+		Country    string    `json:"country"`
+		PostalCode string    `json:"postal_code"`
+		Phone      string    `json:"phone"`
+	}
 )

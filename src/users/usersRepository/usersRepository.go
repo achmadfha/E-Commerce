@@ -4,6 +4,7 @@ import (
 	"E-Commerce/models/dto/usersDto"
 	"E-Commerce/src/users"
 	"database/sql"
+	"github.com/google/uuid"
 )
 
 type userRepository struct {
@@ -127,4 +128,60 @@ func (u userRepository) RetrieveUsersByID(usrID string) (usrData usersDto.UserRe
 	}
 
 	return usrData, nil
+}
+
+func (u userRepository) UpdateProfiles(user usersDto.UserUpdate) error {
+	tx, err := u.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		err = tx.Commit()
+	}()
+
+	// Check if the user profile exists
+	var profileExists bool
+	checkProfileQuery := `SELECT EXISTS(SELECT 1 FROM user_profiles WHERE user_id = $1)`
+	err = tx.QueryRow(checkProfileQuery, user.UserID).Scan(&profileExists)
+	if err != nil {
+		return err
+	}
+
+	if profileExists {
+		// Update the existing profile
+		updateProfileQuery := `UPDATE
+		  user_profiles
+		SET
+		  full_name = $2,
+		  address = $3,
+		  city = $4,
+		  state = $5,
+		  country = $6,
+		  postal_code = $7,
+		  phone = $8
+		WHERE
+		  user_id = $1`
+
+		_, err = tx.Exec(updateProfileQuery, user.UserID, user.FullName, user.Address, user.City, user.State, user.Country, user.PostalCode, user.Phone)
+		if err != nil {
+			return err
+		}
+	} else {
+		// Create a new profile
+		userProfileID, err := uuid.NewRandom()
+		insertProfileQuery := `INSERT INTO user_profiles (user_profile_id, user_id, full_name, address, city, state, country, postal_code, phone)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
+
+		_, err = tx.Exec(insertProfileQuery, userProfileID, user.UserID, user.FullName, user.Address, user.City, user.State, user.Country, user.PostalCode, user.Phone)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

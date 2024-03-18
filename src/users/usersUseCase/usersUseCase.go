@@ -6,6 +6,7 @@ import (
 	"E-Commerce/src/users"
 	"database/sql"
 	"errors"
+	"github.com/google/uuid"
 	"math"
 )
 
@@ -75,4 +76,59 @@ func (u userUC) RetrieveUsersByID(usrID string) (usersDto.UserResponse, error) {
 	}
 
 	return userData, nil
+}
+
+func (u userUC) UpdateProfiles(req usersDto.UserUpdate) error {
+	userID := req.UserID.String()
+	userData, err := u.userRepository.RetrieveUsersByID(userID)
+	if err != nil {
+		return err
+	}
+
+	if req.FullName != "" {
+		userData.UserProfile.FullName = req.FullName
+	}
+
+	if req.Address != "" {
+		userData.UserProfile.Address = req.Address
+	}
+
+	if req.Address != "" {
+		userData.UserProfile.City = req.City
+	}
+
+	if req.Address != "" {
+		userData.UserProfile.State = req.State
+	}
+
+	if req.Address != "" {
+		userData.UserProfile.Country = req.Country
+	}
+
+	if req.Address != "" {
+		userData.UserProfile.PostalCode = req.PostalCode
+	}
+
+	if req.Address != "" {
+		userData.UserProfile.Phone = req.Phone
+	}
+
+	usersID, err := uuid.Parse(userID)
+	usrProfile := usersDto.UserUpdate{
+		UserID:     usersID,
+		FullName:   userData.UserProfile.FullName,
+		Address:    userData.UserProfile.Address,
+		City:       userData.UserProfile.City,
+		State:      userData.UserProfile.State,
+		Country:    userData.UserProfile.Country,
+		PostalCode: userData.UserProfile.PostalCode,
+		Phone:      userData.UserProfile.Phone,
+	}
+
+	err = u.userRepository.UpdateProfiles(usrProfile)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
