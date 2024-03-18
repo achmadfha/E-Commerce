@@ -6,6 +6,7 @@ CREATE TABLE users
     password   VARCHAR(255)        NOT NULL,
     email      VARCHAR(100) UNIQUE NOT NULL,
     role       VARCHAR(20)         NOT NULL,
+    is_deleted BOOLEAN   DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -41,6 +42,7 @@ CREATE TABLE products
     description TEXT,
     price       NUMERIC(10, 2) NOT NULL,
     category_id UUID           NOT NULL,
+    is_deleted BOOLEAN DEFAULT FALSE,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories (category_id)

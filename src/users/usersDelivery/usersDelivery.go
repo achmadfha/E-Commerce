@@ -54,8 +54,7 @@ func (u userDelivery) RetrieveUsersByID(ctx *gin.Context) {
 	userData, err := u.userUC.RetrieveUsersByID(usrID)
 	if err != nil {
 		if err.Error() == "01" {
-			errorMessage := fmt.Sprintf("users %s doesn't have profile, complete ur profile frist", usrID)
-			json.NewResponseForbidden(ctx, errorMessage, constants.ServiceCodeUsers, constants.Forbidden)
+			json.NewResponseForbidden(ctx, "User profile is incomplete. Please update your profile before accessing detailed user information.", constants.ServiceCodeUsers, constants.Forbidden)
 			return
 		}
 
@@ -98,5 +97,11 @@ func (u userDelivery) UpdateProfiles(ctx *gin.Context) {
 		return
 	}
 
-	// todo return updated profile as response
+	usrData, err := u.userUC.RetrieveUsersByID(usrIDStr)
+	if err != nil {
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeUsers, constants.GeneralErrCode)
+		return
+	}
+
+	json.NewResponseSuccess(ctx, usrData, nil, "success retrieve users", constants.ServiceCodeUsers, constants.SuccessCode)
 }

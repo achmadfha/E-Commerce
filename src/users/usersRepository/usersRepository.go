@@ -29,6 +29,8 @@ func (u userRepository) RetrieveAllUsers(page, pageSize int) ([]usersDto.User, e
 	  updated_at
 	FROM
 	  users
+	WHERE
+	  is_deleted = FALSE
 	LIMIT $1 OFFSET $2`
 
 	rows, err := u.db.Query(query, limit, offset)
