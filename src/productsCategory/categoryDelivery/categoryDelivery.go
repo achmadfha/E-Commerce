@@ -7,6 +7,7 @@ import (
 	"E-Commerce/pkg/middleware"
 	"E-Commerce/src/productsCategory"
 	"github.com/gin-gonic/gin"
+	"strconv"
 )
 
 type categoryDelivery struct {
@@ -21,6 +22,8 @@ func NewCategoryDelivery(v1Group *gin.RouterGroup, categoryUC productsCategory.C
 	categoryGroup := v1Group.Group("/categories")
 	{
 		categoryGroup.POST("", middleware.JWTAuth("admin"), handler.CreateCategory)
+		categoryGroup.GET("", middleware.JWTAuth("admin", "users"), handler.RetrieveAllCategory)
+		categoryGroup.GET("/:categoryId", middleware.JWTAuth("admin", "users"), handler.RetrieveCategoryById)
 	}
 }
 
@@ -43,4 +46,38 @@ func (cat categoryDelivery) CreateCategory(ctx *gin.Context) {
 	}
 
 	json.NewResponseSuccess(ctx, categoryData, nil, "success create category", constants.ServiceCodeCategory, constants.SuccessCode)
+}
+
+func (cat categoryDelivery) RetrieveAllCategory(ctx *gin.Context) {
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	pageSize, _ := strconv.Atoi(ctx.Query("size"))
+
+	categoryData, pagination, err := cat.categoryUC.RetrieveAllCategory(page, pageSize)
+	if err != nil {
+		if err.Error() == "01" {
+			errorMessage := "page " + strconv.Itoa(page) + " doesn't exist"
+			json.NewResponseForbidden(ctx, errorMessage, constants.ServiceCodeCategory, constants.Forbidden)
+			return
+		}
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeCategory, constants.GeneralErrCode)
+		return
+	}
+
+	json.NewResponseSuccess(ctx, categoryData, pagination, "success retrieve all category", constants.ServiceCodeCategory, constants.SuccessCode)
+}
+
+func (cat categoryDelivery) RetrieveCategoryById(ctx *gin.Context) {
+	categoryId := ctx.Param("categoryId")
+
+	categoryData, err := cat.categoryUC.RetrieveCategoryById(categoryId)
+	if err != nil {
+		if err.Error() == "01" {
+			json.NewResponseForbidden(ctx, "category doesn't exist", constants.ServiceCodeCategory, constants.Forbidden)
+			return
+		}
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeCategory, constants.GeneralErrCode)
+		return
+	}
+
+	json.NewResponseSuccess(ctx, categoryData, nil, "success retrieve category by id", constants.ServiceCodeCategory, constants.SuccessCode)
 }

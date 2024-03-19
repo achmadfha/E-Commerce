@@ -33,7 +33,6 @@ func (u userUC) RetrieveAllUsers(page, pageSize int) ([]usersDto.User, json.Pagi
 			return nil, json.Pagination{}, errors.New("no rows found")
 		}
 		return nil, json.Pagination{}, err
-
 	}
 
 	totalUserData, err := u.userRepository.CountAllUsers()
