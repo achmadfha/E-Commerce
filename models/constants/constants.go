@@ -10,7 +10,8 @@ const (
 	BadReqMsg      = "Invalid Mandatory Field"
 
 	// ServiceCodeAuth module
-	ServiceCodeJWT   = "00"
-	ServiceCodeAuth  = "01"
-	ServiceCodeUsers = "02"
+	ServiceCodeJWT      = "00"
+	ServiceCodeAuth     = "01"
+	ServiceCodeUsers    = "02"
+	ServiceCodeCategory = "03"
 )

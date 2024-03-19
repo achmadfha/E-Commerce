@@ -30,8 +30,6 @@ CREATE TABLE categories
 (
     category_id        UUID PRIMARY KEY,
     name               VARCHAR(100) NOT NULL,
-    parent_category_id UUID,
-    FOREIGN KEY (parent_category_id) REFERENCES categories (category_id)
 );
 
 -- Product Service
