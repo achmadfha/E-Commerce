@@ -34,6 +34,10 @@ func (cat categoryDelivery) CreateCategory(ctx *gin.Context) {
 
 	categoryData, err := cat.categoryUC.CreateCategory(req.CategoryName)
 	if err != nil {
+		if err.Error() == "01" {
+			json.NewResponseError(ctx, "category already exists", constants.ServiceCodeCategory, constants.GeneralErrCode)
+			return
+		}
 		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeCategory, constants.GeneralErrCode)
 		return
 	}

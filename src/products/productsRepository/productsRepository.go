@@ -15,11 +15,34 @@ func NewProductsRepository(db *sql.DB) productsCategory.CategoryRepository {
 }
 
 func (p productsRepository) CreateCategory(prod productsCategoryDto.ProductsCategoryDto) error {
-	query := `INSERT INTO categories (category_id, name) VALUES ($1, $2)`
+	query := `INSERT INTO
+	  categories (category_id, name)
+	VALUES
+	  ($1, $2)`
 
 	_, err := p.db.Exec(query, prod.CategoryId, prod.CategoryName)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (p productsRepository) CategoryExist(categoryName string) (bool, error) {
+	query := `SELECT
+	  EXISTS(
+		SELECT
+		  1
+		FROM
+		  categories
+		WHERE
+		  name ILIKE $1
+	  )`
+
+	var exists bool
+	err := p.db.QueryRow(query, categoryName).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
 }

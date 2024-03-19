@@ -3,6 +3,7 @@ package categoryUseCase
 import (
 	"E-Commerce/models/dto/productsCategoryDto"
 	"E-Commerce/src/productsCategory"
+	"errors"
 	"github.com/google/uuid"
 )
 
@@ -17,6 +18,15 @@ func NewCategoryUseCase(categoryRepo productsCategory.CategoryRepository) produc
 func (c categoryUC) CreateCategory(categoryName string) (cat productsCategoryDto.ProductsCategoryDto, err error) {
 	catID, err := uuid.NewRandom()
 
+	catExists, err := c.categoryRepo.CategoryExist(categoryName)
+	if err != nil {
+		return productsCategoryDto.ProductsCategoryDto{}, err
+	}
+
+	if catExists {
+		return productsCategoryDto.ProductsCategoryDto{}, errors.New("01")
+	}
+
 	prodData := productsCategoryDto.ProductsCategoryDto{
 		CategoryId:   catID,
 		CategoryName: categoryName,
@@ -24,7 +34,7 @@ func (c categoryUC) CreateCategory(categoryName string) (cat productsCategoryDto
 
 	err = c.categoryRepo.CreateCategory(prodData)
 	if err != nil {
-		return cat, err
+		return productsCategoryDto.ProductsCategoryDto{}, err
 	}
 
 	return prodData, nil
