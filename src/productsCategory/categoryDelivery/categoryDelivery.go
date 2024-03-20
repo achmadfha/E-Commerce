@@ -24,6 +24,8 @@ func NewCategoryDelivery(v1Group *gin.RouterGroup, categoryUC productsCategory.C
 		categoryGroup.POST("", middleware.JWTAuth("admin"), handler.CreateCategory)
 		categoryGroup.GET("", middleware.JWTAuth("admin", "users"), handler.RetrieveAllCategory)
 		categoryGroup.GET("/:categoryId", middleware.JWTAuth("admin", "users"), handler.RetrieveCategoryById)
+		categoryGroup.PUT("/:categoryId", middleware.JWTAuth("admin"), handler.UpdateCategoryName)
+		categoryGroup.DELETE("/:categoryId", middleware.JWTAuth("admin"), handler.DeleteCategoryById)
 	}
 }
 
@@ -80,4 +82,46 @@ func (cat categoryDelivery) RetrieveCategoryById(ctx *gin.Context) {
 	}
 
 	json.NewResponseSuccess(ctx, categoryData, nil, "success retrieve category by id", constants.ServiceCodeCategory, constants.SuccessCode)
+}
+
+func (cat categoryDelivery) UpdateCategoryName(ctx *gin.Context) {
+	categoryId := ctx.Param("categoryId")
+	var req productsCategoryDto.ProductsCategoryReq
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeCategory, constants.GeneralErrCode)
+		return
+	}
+
+	err := cat.categoryUC.UpdateCategory(categoryId, req.CategoryName)
+	if err != nil {
+		if err.Error() == "01" {
+			json.NewResponseForbidden(ctx, "category doesn't exist", constants.ServiceCodeCategory, constants.Forbidden)
+			return
+		}
+		if err.Error() == "02" {
+			json.NewResponseForbidden(ctx, "category already exist exist", constants.ServiceCodeCategory, constants.Forbidden)
+			return
+		}
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeCategory, constants.GeneralErrCode)
+		return
+	}
+
+	json.NewResponseSuccess(ctx, nil, nil, "success update category name", constants.ServiceCodeCategory, constants.SuccessCode)
+}
+
+func (cat categoryDelivery) DeleteCategoryById(ctx *gin.Context) {
+	categoryId := ctx.Param("categoryId")
+
+	err := cat.categoryUC.DeleteCategory(categoryId)
+	if err != nil {
+		if err.Error() == "01" {
+			json.NewResponseForbidden(ctx, "category doesn't exist", constants.ServiceCodeCategory, constants.Forbidden)
+			return
+		}
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeCategory, constants.GeneralErrCode)
+		return
+	}
+
+	json.NewResponseSuccess(ctx, nil, nil, "success delete category by id", constants.ServiceCodeCategory, constants.SuccessCode)
 }

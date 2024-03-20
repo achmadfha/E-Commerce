@@ -90,3 +90,51 @@ func (c categoryUC) RetrieveCategoryById(categoryId string) (productsCategoryDto
 
 	return categoryData, nil
 }
+
+func (c categoryUC) UpdateCategory(categoryId, categoryName string) error {
+	categoryData, err := c.categoryRepo.RetrieveCategoryById(categoryId)
+	if err != nil {
+		if err.Error() == "01" {
+			return errors.New("01")
+		}
+		return err
+	}
+
+	catExists, err := c.categoryRepo.CategoryExist(categoryName)
+	if err != nil {
+		return err
+	}
+
+	if catExists {
+		return errors.New("02")
+	}
+
+	if categoryName != "" {
+		categoryData.CategoryName = categoryName
+	}
+
+	err = c.categoryRepo.UpdateCategory(categoryId, categoryData.CategoryName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c categoryUC) DeleteCategory(categoryId string) error {
+	categoryData, err := c.categoryRepo.RetrieveCategoryById(categoryId)
+	if err != nil {
+		if err.Error() == "01" {
+			return errors.New("01")
+		}
+		return err
+	}
+
+	catIDStr := categoryData.CategoryId.String()
+	err = c.categoryRepo.DeleteCategory(catIDStr)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

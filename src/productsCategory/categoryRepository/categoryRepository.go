@@ -37,6 +37,7 @@ func (c categoryRepository) CategoryExist(categoryName string) (bool, error) {
 		  categories
 		WHERE
 		  name ILIKE $1
+		AND is_deleted = false
 	  )`
 
 	var exists bool
@@ -54,6 +55,8 @@ func (c categoryRepository) RetrieveAllCategory(page, pageSize int) ([]productsC
 	  name
 	FROM
 	  categories
+	WHERE
+	  is_deleted = false
 	LIMIT $1 OFFSET $2`
 
 	rows, err := c.db.Query(query, pageSize, (page-1)*pageSize)
@@ -79,7 +82,9 @@ func (c categoryRepository) CountAllCategory() (int, error) {
 	query := `SELECT
 	  COUNT(*)
 	FROM
-	  categories`
+	  categories
+	WHERE
+	  is_deleted = false`
 
 	var count int
 	err := c.db.QueryRow(query).Scan(&count)
@@ -97,7 +102,9 @@ func (c categoryRepository) RetrieveCategoryById(categoryId string) (productsCat
 	FROM
 	  categories
 	WHERE
-	  category_id = $1`
+	  category_id = $1
+	AND 
+	  is_deleted = false`
 
 	var category productsCategoryDto.ProductsCategoryDto
 	err := c.db.QueryRow(query, categoryId).Scan(&category.CategoryId, &category.CategoryName)
@@ -109,4 +116,38 @@ func (c categoryRepository) RetrieveCategoryById(categoryId string) (productsCat
 	}
 
 	return category, nil
+}
+
+func (c categoryRepository) UpdateCategory(categoryId, categoryName string) error {
+	query := `UPDATE
+	  categories
+	SET
+	  name = $1
+	WHERE
+	  category_id = $2
+	AND
+	  is_deleted = false`
+
+	_, err := c.db.Exec(query, categoryName, categoryId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c categoryRepository) DeleteCategory(categoryId string) error {
+	query := `UPDATE
+	  categories
+	SET
+	  is_deleted = true
+	WHERE
+	  category_id = $1`
+
+	_, err := c.db.Exec(query, categoryId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

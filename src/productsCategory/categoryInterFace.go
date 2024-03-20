@@ -11,10 +11,14 @@ type CategoryRepository interface {
 	RetrieveAllCategory(page, pageSize int) ([]productsCategoryDto.ProductsCategoryDto, error)
 	CountAllCategory() (int, error)
 	RetrieveCategoryById(categoryId string) (productsCategoryDto.ProductsCategoryDto, error)
+	UpdateCategory(categoryId, categoryName string) error
+	DeleteCategory(categoryId string) error
 }
 
 type CategoryUseCase interface {
 	CreateCategory(categoryName string) (cat productsCategoryDto.ProductsCategoryDto, err error)
 	RetrieveAllCategory(page, pageSize int) ([]productsCategoryDto.ProductsCategoryDto, json.Pagination, error)
 	RetrieveCategoryById(categoryId string) (productsCategoryDto.ProductsCategoryDto, error)
+	UpdateCategory(categoryId, categoryName string) error
+	DeleteCategory(categoryId string) error
 }
