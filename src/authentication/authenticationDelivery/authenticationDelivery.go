@@ -136,7 +136,7 @@ func (auth authenticationDelivery) RetrieveUsersByID(ctx *gin.Context) {
 	tokenString := utils.ExtractTokenFromHeader(ctx.Request)
 	claims, err := utils.ParseTokenAndExtractClaims(tokenString)
 	if err != nil {
-		json.NewResponseUnauthorized(ctx, "Unauthorized. [Invalid Token]", constants.ServiceCodeJWT, constants.Unauthorized)
+		json.NewResponseUnauthorized(ctx, err.Error(), constants.ServiceCodeJWT, constants.Unauthorized)
 		return
 	}
 

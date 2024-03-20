@@ -18,6 +18,10 @@ type (
 		MaxConn     int
 		MaxLifeTime string
 		LogMode     int
+		Salt        int
+		Roles       string
+		SecretToken string
+		TokenExpire int
 	}
 
 	AppConfig struct {

@@ -3,6 +3,8 @@ package app
 import (
 	"E-Commerce/config"
 	"E-Commerce/models/dto"
+	"E-Commerce/pkg/middleware"
+	"E-Commerce/pkg/utils"
 	"E-Commerce/router"
 	"database/sql"
 	"errors"
@@ -44,8 +46,9 @@ func initEnv() (dto.ConfigData, error) {
 	saltInt := os.Getenv("SALT")
 	secretToken := os.Getenv("SECRET_TOKEN")
 	tokenExpired := os.Getenv("TOKEN_EXPIRED")
+	Roles := os.Getenv("ROLES")
 
-	if dbHost == "" || dbPort == "" || dbUser == "" || dbPassword == "" || dbName == "" || dbMaxIdle == "" || dbMaxConn == "" || dbMaxLifeTime == "" || dbLogMode == "" || saltInt == "" || secretToken == "" || tokenExpired == "" {
+	if dbHost == "" || dbPort == "" || dbUser == "" || dbPassword == "" || dbName == "" || dbMaxIdle == "" || dbMaxConn == "" || dbMaxLifeTime == "" || dbLogMode == "" || saltInt == "" || secretToken == "" || tokenExpired == "" || Roles == "" {
 		return configData, errors.New("DB Config not set")
 	}
 
@@ -66,6 +69,10 @@ func initEnv() (dto.ConfigData, error) {
 	configData.DbConfig.Database = dbName
 	configData.DbConfig.MaxLifeTime = dbMaxLifeTime
 	configData.DbConfig.LogMode, err = strconv.Atoi(dbLogMode)
+	configData.DbConfig.Salt, err = strconv.Atoi(saltInt)
+	configData.DbConfig.SecretToken = secretToken
+	configData.DbConfig.TokenExpire, err = strconv.Atoi(tokenExpired)
+	configData.DbConfig.Roles = Roles
 	if err != nil {
 		return configData, err
 	}
@@ -102,6 +109,9 @@ func RunService() {
 		log.Error().Msg("service.Duration.Err: " + err.Error())
 		return
 	}
+
+	utils.InitConfigData(configData)
+	middleware.InitConfigData(configData)
 
 	conn.SetConnMaxLifetime(duration)
 	conn.SetMaxIdleConns(configData.DbConfig.MaxIdle)

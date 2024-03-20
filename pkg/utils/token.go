@@ -1,25 +1,29 @@
 package utils
 
 import (
+	"E-Commerce/models/dto"
+	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 )
 
-func GenerateToken(id uuid.UUID, role string) (tokenString string, err error) {
-	expired := os.Getenv("TOKEN_EXPIRED")
-	secret := os.Getenv("SECRET_TOKEN")
-	exp, err := strconv.Atoi(expired)
-	if err != nil {
-		return "", err
-	}
+var configData dto.ConfigData // Package-level variable to store configuration data
 
+func InitConfigData(data dto.ConfigData) {
+	configData = data
+}
+
+func GenerateToken(id uuid.UUID, role string) (tokenString string, err error) {
+
+	secret := configData.DbConfig.SecretToken
+	expired := configData.DbConfig.TokenExpire
+
+	fmt.Println(expired)
 	now := time.Now()
-	expiredTime := time.Now().Add(time.Duration(exp) * time.Hour)
+	expiredTime := time.Now().Add(time.Duration(expired) * time.Hour)
 
 	claims := jwt.MapClaims{
 		"clientId": id,
@@ -52,7 +56,7 @@ func ExtractTokenFromHeader(r *http.Request) string {
 }
 
 func ParseTokenAndExtractClaims(tokenString string) (jwt.MapClaims, error) {
-	secret := os.Getenv("SECRET_TOKEN")
+	secret := configData.DbConfig.SecretToken
 	key := []byte(secret)
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {

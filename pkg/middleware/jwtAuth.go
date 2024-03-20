@@ -2,16 +2,23 @@ package middleware
 
 import (
 	"E-Commerce/models/constants"
+	"E-Commerce/models/dto"
 	"E-Commerce/models/dto/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"os"
 	"strings"
 	"time"
 )
 
+var configData dto.ConfigData // Package-level variable to store configuration data
+
+func InitConfigData(data dto.ConfigData) {
+	configData = data
+}
+
 func JWTAuth(roles ...string) gin.HandlerFunc {
-	secret := os.Getenv("SECRET_TOKEN")
+	secret := configData.DbConfig.SecretToken
 
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -26,21 +33,24 @@ func JWTAuth(roles ...string) gin.HandlerFunc {
 			return []byte(secret), nil
 		})
 		if err != nil {
-			json.NewResponseUnauthorized(c, "Unauthorized. [Invalid Token]", constants.ServiceCodeJWT, constants.Unauthorized)
+			err := fmt.Sprintf("Unauthorized. [%s]", err.Error())
+			json.NewResponseUnauthorized(c, err, constants.ServiceCodeJWT, constants.Unauthorized)
 			c.Abort()
 			return
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok || !token.Valid {
-			json.NewResponseUnauthorized(c, "Unauthorized. [Invalid Token]", constants.ServiceCodeJWT, constants.Unauthorized)
+			err := fmt.Sprintf("Unauthorized. [%s]", err.Error())
+			json.NewResponseUnauthorized(c, err, constants.ServiceCodeJWT, constants.Unauthorized)
 			c.Abort()
 			return
 		}
 
 		expirationTime := int64(claims["exp"].(float64))
 		if time.Now().Unix() > expirationTime {
-			json.NewResponseUnauthorized(c, "Unauthorized. [Token Expired]", constants.ServiceCodeJWT, constants.Unauthorized)
+			err := fmt.Sprintf("Unauthorized. [%s]", err.Error())
+			json.NewResponseUnauthorized(c, err, constants.ServiceCodeJWT, constants.Unauthorized)
 			c.Abort()
 			return
 		}
@@ -56,7 +66,8 @@ func JWTAuth(roles ...string) gin.HandlerFunc {
 		}
 
 		if !validRole {
-			json.NewResponseForbidden(c, "Unauthorized. [Forbidden]", constants.ServiceCodeJWT, constants.Unauthorized)
+			err := fmt.Sprintf("Unauthorized. [%s]", err.Error())
+			json.NewResponseForbidden(c, err, constants.ServiceCodeJWT, constants.Unauthorized)
 			c.Abort()
 			return
 		}
