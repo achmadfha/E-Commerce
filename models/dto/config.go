@@ -9,19 +9,22 @@ type (
 	}
 
 	DbConfig struct {
-		Host        string
-		DbPort      string
-		User        string
-		Pass        string
-		Database    string
-		MaxIdle     int
-		MaxConn     int
-		MaxLifeTime string
-		LogMode     int
-		Salt        int
-		Roles       string
-		SecretToken string
-		TokenExpire int
+		Host               string
+		DbPort             string
+		User               string
+		Pass               string
+		Database           string
+		MaxIdle            int
+		MaxConn            int
+		MaxLifeTime        string
+		LogMode            int
+		Salt               int
+		Roles              string
+		SecretToken        string
+		TokenExpire        int
+		AwsAccessKey       string
+		AwsSecretAccessKey string
+		AwsBucketS3        string
 	}
 
 	AppConfig struct {

@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var configData dto.ConfigData // Package-level variable to store configuration data
+var configData dto.ConfigData
 
 func InitConfigData(data dto.ConfigData) {
 	configData = data

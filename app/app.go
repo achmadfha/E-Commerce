@@ -47,8 +47,11 @@ func initEnv() (dto.ConfigData, error) {
 	secretToken := os.Getenv("SECRET_TOKEN")
 	tokenExpired := os.Getenv("TOKEN_EXPIRED")
 	Roles := os.Getenv("ROLES")
+	awsAccessKey := os.Getenv("AWS_ACCESS_KEY")
+	awsSecretAccessKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	awsBucketS3 := os.Getenv("AWS_BUCKET_S3")
 
-	if dbHost == "" || dbPort == "" || dbUser == "" || dbPassword == "" || dbName == "" || dbMaxIdle == "" || dbMaxConn == "" || dbMaxLifeTime == "" || dbLogMode == "" || saltInt == "" || secretToken == "" || tokenExpired == "" || Roles == "" {
+	if dbHost == "" || dbPort == "" || dbUser == "" || dbPassword == "" || dbName == "" || dbMaxIdle == "" || dbMaxConn == "" || dbMaxLifeTime == "" || dbLogMode == "" || saltInt == "" || secretToken == "" || tokenExpired == "" || Roles == "" || awsAccessKey == "" || awsSecretAccessKey == "" || awsBucketS3 == "" {
 		return configData, errors.New("DB Config not set")
 	}
 
@@ -73,6 +76,9 @@ func initEnv() (dto.ConfigData, error) {
 	configData.DbConfig.SecretToken = secretToken
 	configData.DbConfig.TokenExpire, err = strconv.Atoi(tokenExpired)
 	configData.DbConfig.Roles = Roles
+	configData.DbConfig.AwsAccessKey = awsAccessKey
+	configData.DbConfig.AwsSecretAccessKey = awsSecretAccessKey
+	configData.DbConfig.AwsBucketS3 = awsBucketS3
 	if err != nil {
 		return configData, err
 	}
