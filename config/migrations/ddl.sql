@@ -1,4 +1,3 @@
--- Authentication & Authorization Service
 CREATE TABLE users
 (
     user_id    UUID PRIMARY KEY,
@@ -11,7 +10,6 @@ CREATE TABLE users
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- User Service
 CREATE TABLE user_profiles
 (
     user_profile_id UUID PRIMARY KEY,
@@ -28,25 +26,31 @@ CREATE TABLE user_profiles
 
 CREATE TABLE categories
 (
-    category_id        UUID PRIMARY KEY,
-    name               VARCHAR(100) NOT NULL,
+    category_id UUID PRIMARY KEY,
+    name        VARCHAR(100) NOT NULL,
 );
 
--- Product Service
 CREATE TABLE products
 (
-    product_id  UUID PRIMARY KEY,
-    name        VARCHAR(100)   NOT NULL,
-    description TEXT,
-    price       NUMERIC(10, 2) NOT NULL,
-    category_id UUID           NOT NULL,
-    is_deleted BOOLEAN DEFAULT FALSE,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    product_id    UUID PRIMARY KEY,
+    name          VARCHAR(100)   NOT NULL,
+    description   TEXT,
+    price         NUMERIC(10, 2) NOT NULL,
+    category_id   UUID           NOT NULL,
+    product_image TEXT[],
+    is_deleted    BOOLEAN   DEFAULT FALSE,
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories (category_id)
 );
 
--- Order Service
+CREATE TABLE inventory
+(
+    product_id     UUID PRIMARY KEY,
+    stock_quantity INT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products (product_id)
+);
+
 CREATE TABLE orders
 (
     order_id     UUID PRIMARY KEY,
@@ -69,7 +73,6 @@ CREATE TABLE order_items
     FOREIGN KEY (product_id) REFERENCES products (product_id)
 );
 
--- Payment Service
 CREATE TABLE payments
 (
     payment_id     UUID PRIMARY KEY,
@@ -82,15 +85,6 @@ CREATE TABLE payments
     FOREIGN KEY (order_id) REFERENCES orders (order_id)
 );
 
--- Inventory Service
-CREATE TABLE inventory
-(
-    product_id     UUID PRIMARY KEY,
-    stock_quantity INT NOT NULL,
-    FOREIGN KEY (product_id) REFERENCES products (product_id)
-);
-
--- Shipping Service
 CREATE TABLE shipments
 (
     shipment_id      UUID PRIMARY KEY,
@@ -103,7 +97,6 @@ CREATE TABLE shipments
     FOREIGN KEY (order_id) REFERENCES orders (order_id)
 );
 
--- Reviews & Ratings Service
 CREATE TABLE product_reviews
 (
     review_id  UUID PRIMARY KEY,
