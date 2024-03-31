@@ -4,6 +4,7 @@ import (
 	"E-Commerce/models/dto/productsDto"
 	"E-Commerce/pkg/utils"
 	"E-Commerce/src/products"
+	"E-Commerce/src/productsCategory"
 	"errors"
 	"github.com/google/uuid"
 	"io"
@@ -12,10 +13,11 @@ import (
 
 type productsUC struct {
 	productsRepo products.ProductsRepository
+	categoryRepo productsCategory.CategoryRepository
 }
 
-func NewProductsUseCase(productsRepo products.ProductsRepository) products.ProductsUseCase {
-	return &productsUC{productsRepo}
+func NewProductsUseCase(productsRepo products.ProductsRepository, categoryRepo productsCategory.CategoryRepository) products.ProductsUseCase {
+	return &productsUC{productsRepo, categoryRepo}
 }
 
 func (prod productsUC) UploadProductsImages(fileContent io.Reader) (string, error) {
@@ -27,6 +29,18 @@ func (prod productsUC) UploadProductsImages(fileContent io.Reader) (string, erro
 	_, err := fileContent.Read(fileHeader)
 	if err != nil {
 		return "", err
+	}
+
+	// Check the file size
+	const maxFileSize = 2 << 20 // 2MB
+	limitedReader := io.LimitedReader{R: fileContent, N: maxFileSize + 1}
+	_, err = io.CopyN(io.Discard, &limitedReader, maxFileSize+1)
+	if err != nil && !errors.Is(err, io.EOF) {
+		return "", err
+	}
+
+	if limitedReader.N <= 0 {
+		return "", errors.New("file size is more than 2MB")
 	}
 
 	if _, err := fileContent.(io.Seeker).Seek(0, io.SeekStart); err != nil {
@@ -52,13 +66,14 @@ func (prod productsUC) CreateProducts(product productsDto.ProductsRequest) (prod
 		return productsDto.ProductsResponse{}, err
 	}
 
-	//Todo
-	// check if categoryID exists in the database
-	// if not exists return error 'category not found
-	// if exists continue to the next process
-	// check if there is a product with the same name in the database
-	// if exists return error 'product name already exists'
-	// if not exists continue to the next process
+	catID := product.CategoryID.String()
+	categoryData, err := prod.categoryRepo.RetrieveCategoryById(catID)
+	if err != nil {
+		if err.Error() == "01" {
+			return productsDto.ProductsResponse{}, errors.New("01")
+		}
+		return productsDto.ProductsResponse{}, err
+	}
 
 	productRepo := productsDto.ProductsRepo{
 		ProductsID:   productsID,
@@ -66,7 +81,7 @@ func (prod productsUC) CreateProducts(product productsDto.ProductsRequest) (prod
 		ProductImage: product.ProductImage,
 		Description:  product.Description,
 		Price:        product.Price,
-		CategoryID:   product.CategoryID,
+		CategoryID:   categoryData.CategoryId,
 		Stock:        product.Stock,
 	}
 
@@ -80,10 +95,32 @@ func (prod productsUC) CreateProducts(product productsDto.ProductsRequest) (prod
 		ProductName:  productRepo.ProductName,
 		ProductImage: productRepo.ProductImage,
 		Description:  productRepo.Description,
-		Price:        productRepo.Price,
-		CategoryID:   productRepo.CategoryID,
+		Price:        float64(productRepo.Price),
+		CategoryID:   categoryData.CategoryId,
 		Stock:        productRepo.Stock,
 	}
 
 	return productResp, nil
+}
+
+func (prod productsUC) RetrieveAllProducts() ([]productsDto.ProductsResponse, error) {
+	productsData, err := prod.productsRepo.RetrieveALlProducts()
+	if err != nil {
+		return nil, err
+	}
+
+	var productsResponse []productsDto.ProductsResponse
+	for _, product := range productsData {
+		productsResponse = append(productsResponse, productsDto.ProductsResponse{
+			ProductsID:   product.ProductsID,
+			ProductName:  product.ProductName,
+			ProductImage: product.ProductImage,
+			Description:  product.Description,
+			Price:        product.Price,
+			CategoryID:   product.CategoryID,
+			Stock:        product.Stock,
+		})
+	}
+
+	return productsResponse, nil
 }

@@ -28,7 +28,7 @@ func InitRouter(v1Group *gin.RouterGroup, db *sql.DB) {
 	authenticationUC := authenticationUseCase.NewAuthenticationUseCase(authenticationRepo)
 	usersUC := usersUseCase.NewUserUseCase(usersRepo)
 	categoryUC := categoryUseCase.NewCategoryUseCase(categoryRepo)
-	productsUC := productsUseCase.NewProductsUseCase(productsRepo)
+	productsUC := productsUseCase.NewProductsUseCase(productsRepo, categoryRepo)
 
 	// delivery
 	authenticationDelivery.NewAuthenticationDelivery(v1Group, authenticationUC)

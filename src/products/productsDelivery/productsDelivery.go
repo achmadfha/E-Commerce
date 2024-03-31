@@ -6,6 +6,7 @@ import (
 	"E-Commerce/models/dto/productsDto"
 	"E-Commerce/pkg/validation"
 	"E-Commerce/src/products"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,6 +23,7 @@ func NewProductsDelivery(v1Group *gin.RouterGroup, productsUC products.ProductsU
 	{
 		productsGroup.POST("/upload-images", handler.UploadProductsImages)
 		productsGroup.POST("", handler.CreateProducts)
+		productsGroup.GET("", handler.RetrieveAllProducts)
 	}
 
 }
@@ -66,9 +68,24 @@ func (prod productsDelivery) CreateProducts(ctx *gin.Context) {
 
 	product, err := prod.productsUC.CreateProducts(req)
 	if err != nil {
+		if err.Error() == "01" {
+			msg := fmt.Sprintf("category with id %s not found", req.CategoryID.String())
+			json.NewResponseError(ctx, msg, constants.ServiceCodeProduct, constants.NotFoundCode)
+			return
+		}
 		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeProduct, constants.GeneralErrCode)
 		return
 	}
 
 	json.NewResponseSuccess(ctx, product, nil, "Success Create Product", constants.ServiceCodeProduct, constants.SuccessCode)
+}
+
+func (prod productsDelivery) RetrieveAllProducts(ctx *gin.Context) {
+	productData, err := prod.productsUC.RetrieveAllProducts()
+	if err != nil {
+		json.NewResponseError(ctx, err.Error(), constants.ServiceCodeProduct, constants.GeneralErrCode)
+		return
+	}
+
+	json.NewResponseSuccess(ctx, productData, nil, "Success Retrieve All Products", constants.ServiceCodeProduct, constants.SuccessCode)
 }

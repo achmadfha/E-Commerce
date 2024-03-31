@@ -26,8 +26,7 @@ func UploadToS3(file io.Reader) (string, error) {
 
 	uploader := s3manager.NewUploader(sess)
 	uuid := uuid.New()
-	date := time.Now().Format("02-01-2006")
-	fileName := fmt.Sprintf("%s-%s", uuid, date)
+	fileName := fmt.Sprintf("%s", uuid)
 
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket:      aws.String(bucket),

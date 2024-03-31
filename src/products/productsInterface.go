@@ -7,9 +7,11 @@ import (
 
 type ProductsRepository interface {
 	CreateProducts(product productsDto.ProductsRepo) error
+	RetrieveALlProducts() ([]productsDto.ProductsResponse, error)
 }
 
 type ProductsUseCase interface {
 	UploadProductsImages(fileContent io.Reader) (string, error)
 	CreateProducts(product productsDto.ProductsRequest) (productsDto.ProductsResponse, error)
+	RetrieveAllProducts() ([]productsDto.ProductsResponse, error)
 }

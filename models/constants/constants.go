@@ -7,6 +7,7 @@ const (
 	Forbidden      = "03"
 	Unauthorized   = "00"
 	DefaultRole    = "users"
+	NotFoundCode   = "04"
 	BadReqMsg      = "Invalid Mandatory Field"
 
 	// ServiceCodeAuth module

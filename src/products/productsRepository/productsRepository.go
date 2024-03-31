@@ -60,3 +60,39 @@ func (p productsRepository) CreateProducts(product productsDto.ProductsRepo) err
 
 	return nil
 }
+
+func (p productsRepository) RetrieveALlProducts() ([]productsDto.ProductsResponse, error) {
+	productsQuery := `SELECT
+	  p.product_id,
+	  p.name,
+	  p.description,
+	  p.price,
+	  p.category_id,
+	  p.images,
+	  i.stock_quantity
+	FROM
+	  products p
+	JOIN
+	  inventory i
+	ON
+	  p.product_id = i.product_id`
+
+	rows, err := p.db.Query(productsQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	var products []productsDto.ProductsResponse
+	for rows.Next() {
+		var product productsDto.ProductsResponse
+		var images pq.StringArray
+		err := rows.Scan(&product.ProductsID, &product.ProductName, &product.Description, &product.Price, &product.CategoryID, &images, &product.Stock)
+		if err != nil {
+			return nil, err
+		}
+		product.ProductImage = images
+		products = append(products, product)
+	}
+
+	return products, nil
+}

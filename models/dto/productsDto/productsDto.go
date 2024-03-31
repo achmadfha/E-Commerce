@@ -27,7 +27,7 @@ type (
 		ProductName  string    `json:"product_name"`
 		ProductImage []string  `json:"product_image"`
 		Description  string    `json:"description"`
-		Price        int       `json:"price"`
+		Price        float64   `json:"price"`
 		CategoryID   uuid.UUID `json:"category_id"`
 		Stock        int       `json:"stock"`
 	}
