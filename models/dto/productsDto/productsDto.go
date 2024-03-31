@@ -31,4 +31,19 @@ type (
 		CategoryID   uuid.UUID `json:"category_id"`
 		Stock        int       `json:"stock"`
 	}
+
+	ProductsResponseDetail struct {
+		ProductsID   uuid.UUID        `json:"products_id"`
+		ProductName  string           `json:"product_name"`
+		ProductImage []string         `json:"product_image"`
+		Description  string           `json:"description"`
+		Price        float64          `json:"price"`
+		Category     ProductsCategory `json:"category"`
+		Stock        int              `json:"stock"`
+	}
+
+	ProductsCategory struct {
+		CategoryID   uuid.UUID `json:"category_id"`
+		CategoryName string    `json:"category_name"`
+	}
 )

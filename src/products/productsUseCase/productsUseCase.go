@@ -124,3 +124,86 @@ func (prod productsUC) RetrieveAllProducts() ([]productsDto.ProductsResponse, er
 
 	return productsResponse, nil
 }
+
+func (prod productsUC) RetrieveProductByID(productID string) (productsDto.ProductsResponseDetail, error) {
+	productData, err := prod.productsRepo.RetrieveProductByID(productID)
+	if err != nil {
+		if err.Error() == "01" {
+			return productsDto.ProductsResponseDetail{}, errors.New("01")
+		}
+		return productsDto.ProductsResponseDetail{}, err
+	}
+
+	return productData, nil
+}
+
+func (prod productsUC) UpdateProducts(product productsDto.ProductsRepo) error {
+	productsID := product.ProductsID.String()
+	productsData, err := prod.productsRepo.RetrieveProductByID(productsID)
+	if err != nil {
+		if err.Error() == "01" {
+			return errors.New("01")
+		}
+		return err
+	}
+
+	if product.ProductName != "" {
+		productsData.ProductName = product.ProductName
+	}
+
+	if len(product.ProductImage) > 0 {
+		productsData.ProductImage = product.ProductImage
+	}
+
+	if product.Description != "" {
+		productsData.Description = product.Description
+	}
+
+	if product.Price != 0 {
+		productsData.Price = float64(product.Price)
+	}
+
+	if product.CategoryID != uuid.Nil {
+		productsData.Category.CategoryID = product.CategoryID
+	}
+
+	if product.Stock >= 0 {
+		productsData.Stock = product.Stock
+	} else {
+		productsData.Stock = productsData.Stock
+	}
+
+	prodData := productsDto.ProductsRepo{
+		ProductsID:   productsData.ProductsID,
+		ProductName:  productsData.ProductName,
+		ProductImage: productsData.ProductImage,
+		Description:  productsData.Description,
+		Price:        int(productsData.Price),
+		CategoryID:   productsData.Category.CategoryID,
+		Stock:        productsData.Stock,
+	}
+
+	err = prod.productsRepo.UpdateProducts(prodData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (prod productsUC) DeleteProducts(productID string) error {
+	productData, err := prod.productsRepo.RetrieveProductByID(productID)
+	if err != nil {
+		if err.Error() == "01" {
+			return errors.New("01")
+		}
+		return err
+	}
+
+	err = prod.productsRepo.DeleteProducts(productData.ProductsID.String())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
