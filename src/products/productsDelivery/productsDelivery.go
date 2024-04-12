@@ -4,6 +4,7 @@ import (
 	"E-Commerce/models/constants"
 	"E-Commerce/models/dto/json"
 	"E-Commerce/models/dto/productsDto"
+	"E-Commerce/pkg/middleware"
 	"E-Commerce/pkg/validation"
 	"E-Commerce/src/products"
 	"fmt"
@@ -23,12 +24,12 @@ func NewProductsDelivery(v1Group *gin.RouterGroup, productsUC products.ProductsU
 
 	productsGroup := v1Group.Group("/products")
 	{
-		productsGroup.POST("/upload-images", handler.UploadProductsImages)
-		productsGroup.POST("", handler.CreateProducts)
-		productsGroup.GET("", handler.RetrieveAllProducts)
-		productsGroup.GET("/:id", handler.RetrieveProductsByID)
-		productsGroup.PUT("/:id", handler.UpdateProducts)
-		productsGroup.DELETE("/:id", handler.DeleteProducts)
+		productsGroup.POST("/upload-images", middleware.JWTAuth("admin"), handler.UploadProductsImages)
+		productsGroup.POST("", middleware.JWTAuth("admin"), handler.CreateProducts)
+		productsGroup.GET("", middleware.JWTAuth("admin", "users"), handler.RetrieveAllProducts)
+		productsGroup.GET("/:id", middleware.JWTAuth("admin", "users"), handler.RetrieveProductsByID)
+		productsGroup.PUT("/:id", middleware.JWTAuth("admin"), handler.UpdateProducts)
+		productsGroup.DELETE("/:id", middleware.JWTAuth("admin"), handler.DeleteProducts)
 	}
 
 }

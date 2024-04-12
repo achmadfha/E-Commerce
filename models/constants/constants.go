@@ -16,4 +16,5 @@ const (
 	ServiceCodeUsers    = "02"
 	ServiceCodeCategory = "03"
 	ServiceCodeProduct  = "04"
+	ServiceCodeOrder    = "05"
 )
